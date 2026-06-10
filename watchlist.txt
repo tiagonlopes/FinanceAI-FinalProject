@@ -1,0 +1,8 @@
+# Core watchlist — always analyzed.
+# One ticker per line. Lines starting with # are ignored.
+# Benchmarks (SPY, QQQ, DIA, IWM) are appended automatically — don't add them here.
+
+AAPL
+MSFT
+NVDA
+TSLA
