@@ -386,6 +386,21 @@ class TechnicalAnalyzer:
             ta.trend.SMAIndicator(close, window=50).sma_indicator() if len(close) >= 50 else None
         )
 
+        bb_upper_series = bb_lower_series = None
+        if len(close) >= 20:
+            bb = ta.volatility.BollingerBands(close, window=20, window_dev=2)
+            bb_upper_series = bb.bollinger_hband()
+            bb_lower_series = bb.bollinger_lband()
+
+        rsi_series = ta.momentum.RSIIndicator(close, window=14).rsi() if len(close) >= 14 else None
+
+        macd_line_series = macd_signal_series = macd_hist_series = None
+        if len(close) >= 26:
+            macd_ind = ta.trend.MACD(close)
+            macd_line_series = macd_ind.macd()
+            macd_signal_series = macd_ind.macd_signal()
+            macd_hist_series = macd_ind.macd_diff()
+
         history = []
         for date, price in close.tail(history_len).items():
             history.append({
@@ -393,6 +408,12 @@ class TechnicalAnalyzer:
                 "close": safe_float(price),
                 "sma_20": safe_float(sma_20_series.loc[date]) if sma_20_series is not None else None,
                 "sma_50": safe_float(sma_50_series.loc[date]) if sma_50_series is not None else None,
+                "bb_upper": safe_float(bb_upper_series.loc[date]) if bb_upper_series is not None else None,
+                "bb_lower": safe_float(bb_lower_series.loc[date]) if bb_lower_series is not None else None,
+                "rsi": safe_float(rsi_series.loc[date]) if rsi_series is not None else None,
+                "macd": safe_float(macd_line_series.loc[date]) if macd_line_series is not None else None,
+                "macd_signal": safe_float(macd_signal_series.loc[date]) if macd_signal_series is not None else None,
+                "macd_hist": safe_float(macd_hist_series.loc[date]) if macd_hist_series is not None else None,
             })
         return history
 

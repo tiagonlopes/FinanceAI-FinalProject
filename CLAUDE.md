@@ -96,7 +96,9 @@ data/                Intermediate JSON cache (gitignored)
 reports/             Output HTML + MD (gitignored)
 ```
 
-**Active LLM provider: Gemini.** `main.py` imports `ReportingAgent`/`CritiqueAgent` from `src/reporter_gemini.py`, which hardcodes `_MODEL = "gemini-2.5-flash"`. It reuses the system prompts (`_REPORT_SYSTEM`, `_CRITIQUE_SYSTEM`), data-section builder, and HTML wrapper from `src/reporter.py` — only the API client and streaming call differ (`google-genai` SDK vs `anthropic` SDK). Output files are suffixed `_gemini` (e.g., `report_gemini_*.md/html`, `critique_gemini_*.md/html`) to distinguish from the legacy Claude outputs.
+**Active LLM provider: Gemini.** `main.py` imports `ReportingAgent`/`CritiqueAgent` from `src/reporter_gemini.py`, which hardcodes `_MODEL = "gemini-2.5-flash"`. It reuses the system prompts (`_REPORT_SYSTEM`, `_CRITIQUE_SYSTEM`), data-section builder, and HTML wrapper from `src/reporter.py` — only the API client and streaming call differ (`google-genai` SDK vs `anthropic` SDK). Output files are suffixed `_gemini` (`report_gemini.md/html`, `critique_gemini.md/html`) to distinguish from the legacy Claude outputs (`report.md/html`, `critique.md/html`).
+
+**Each run overwrites the previous report/critique** — filenames are fixed (no timestamp), so `reports/` always holds just the latest output. This keeps the directory clean ahead of the planned migration to an API + web frontend, where the backend will serve the single latest report rather than a list of files.
 
 **Why gemini-2.5-flash, not gemini-2.5-pro:** the configured `GEMINI_API_KEY` is on the free tier, which has a **0 request/token quota for `gemini-2.5-pro`** (returns HTTP 429 RESOURCE_EXHAUSTED immediately). `gemini-2.5-flash` works on the free tier. If the API key is upgraded to a paid plan, `_MODEL` in `src/reporter_gemini.py` can be switched back to `gemini-2.5-pro` for higher-quality reports.
 
@@ -117,14 +119,14 @@ reports/             Output HTML + MD (gitignored)
 
 ## Report Structure
 
-**Main report** (`report_YYYYMMDD_HHMMSS.html`) — blue theme, 5 sections:
+**Main report** (`report_gemini.html`) — blue theme, 5 sections:
 1. Executive Summary
 2. Market Context (benchmark ETFs)
 3. Stock-by-Stock Analysis (trend, forecast comparison, key risks)
 4. Investment Sentiment table (Ticker | Sentiment | Rationale | Key Risk)
 5. Methodology Notes
 
-**Critique report** (`critique_YYYYMMDD_HHMMSS.html`) — red/amber theme, 7 sections:
+**Critique report** (`critique_gemini.html`) — red/amber theme, 7 sections:
 1. Overconfidence Flags
 2. Data Blind Spots
 3. Model Limitations (ARIMA + Prophet)

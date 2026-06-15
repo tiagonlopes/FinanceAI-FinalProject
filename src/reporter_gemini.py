@@ -1,6 +1,5 @@
 import logging
 import os
-from datetime import datetime
 
 import markdown as md_lib
 from google import genai
@@ -72,10 +71,9 @@ class ReportingAgent:
 
     def save(self, report_md: str, output_dir: str, analysis_json: dict | None = None) -> dict[str, str]:
         os.makedirs(output_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        md_path = os.path.join(output_dir, f"report_gemini_{timestamp}.md")
-        html_path = os.path.join(output_dir, f"report_gemini_{timestamp}.html")
+        md_path = os.path.join(output_dir, "report_gemini.md")
+        html_path = os.path.join(output_dir, "report_gemini.html")
 
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(report_md)
@@ -172,10 +170,9 @@ class CritiqueAgent:
 
     def save(self, critique_md: str, output_dir: str) -> dict[str, str]:
         os.makedirs(output_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        md_path = os.path.join(output_dir, f"critique_gemini_{timestamp}.md")
-        html_path = os.path.join(output_dir, f"critique_gemini_{timestamp}.html")
+        md_path = os.path.join(output_dir, "critique_gemini.md")
+        html_path = os.path.join(output_dir, "critique_gemini.html")
 
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(critique_md)

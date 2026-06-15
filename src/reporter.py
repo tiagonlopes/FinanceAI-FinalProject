@@ -276,6 +276,8 @@ def _wrap_html(body: str, title: str, theme: str = "blue") -> str:
   hr {{ border: none; border-top: 1px solid #e8ecf0; margin: 32px 0; }}
   .chart-container {{ margin: 16px 0 28px 0; border: 1px solid #e8ecf0; border-radius: 8px; padding: 8px; }}
   .chart-gauge {{ max-width: 420px; }}
+  .chart-row {{ display: flex; flex-wrap: wrap; gap: 16px; }}
+  .chart-row .chart-container {{ flex: 1 1 0; min-width: 320px; margin: 16px 0 28px 0; }}
   .prob-summary {{ color: #5d6d7e; margin-top: -16px; margin-bottom: 28px; }}
   h4 {{ color: {accent}; margin-top: 32px; margin-bottom: 4px; font-size: 1.0em; }}
 </style>
@@ -341,10 +343,9 @@ class ReportingAgent:
 
     def save(self, report_md: str, output_dir: str) -> dict[str, str]:
         os.makedirs(output_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        md_path = os.path.join(output_dir, f"report_{timestamp}.md")
-        html_path = os.path.join(output_dir, f"report_{timestamp}.html")
+        md_path = os.path.join(output_dir, "report.md")
+        html_path = os.path.join(output_dir, "report.html")
 
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(report_md)
@@ -433,10 +434,9 @@ class CritiqueAgent:
 
     def save(self, critique_md: str, output_dir: str) -> dict[str, str]:
         os.makedirs(output_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        md_path = os.path.join(output_dir, f"critique_{timestamp}.md")
-        html_path = os.path.join(output_dir, f"critique_{timestamp}.html")
+        md_path = os.path.join(output_dir, "critique.md")
+        html_path = os.path.join(output_dir, "critique.html")
 
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(critique_md)

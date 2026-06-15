@@ -64,8 +64,16 @@ def build_price_forecast_chart(tech: dict) -> str:
     closes = [h.get("close") for h in history]
     sma20 = [h.get("sma_20") for h in history]
     sma50 = [h.get("sma_50") for h in history]
+    bb_upper = [h.get("bb_upper") for h in history]
+    bb_lower = [h.get("bb_lower") for h in history]
 
     fig = go.Figure()
+    if any(v is not None for v in bb_upper) and any(v is not None for v in bb_lower):
+        fig.add_trace(go.Scatter(x=dates, y=bb_upper, line=dict(width=0), showlegend=False,
+                                  hoverinfo="skip", name="BB upper"))
+        fig.add_trace(go.Scatter(x=dates, y=bb_lower, line=dict(width=0), fill="tonexty",
+                                  fillcolor="rgba(127,140,141,0.12)",
+                                  name="Bollinger Bands (20, 2σ)", hoverinfo="skip"))
     fig.add_trace(go.Scatter(x=dates, y=closes, name="Close", mode="lines",
                               line=dict(color="#1f6dad", width=2)))
     if any(v is not None for v in sma20):
@@ -115,6 +123,61 @@ def build_price_forecast_chart(tech: dict) -> str:
         yaxis_title="Price ($)",
         legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="left", x=0),
         margin=dict(t=60, b=80, l=60, r=20),
+    )
+    return pio.to_html(fig, full_html=False, include_plotlyjs=False)
+
+
+def build_rsi_chart(tech: dict) -> str:
+    history = tech.get("price_history") or []
+    if not history or not any(h.get("rsi") is not None for h in history):
+        return ""
+
+    dates = [h["date"] for h in history]
+    rsi = [h.get("rsi") for h in history]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=dates, y=rsi, name="RSI (14)", mode="lines",
+                              line=dict(color="#8e44ad", width=2)))
+    fig.add_hline(y=70, line=dict(color="#e74c3c", dash="dash", width=1))
+    fig.add_hline(y=30, line=dict(color="#27ae60", dash="dash", width=1))
+
+    fig.update_layout(
+        title=dict(text=f"{tech.get('symbol', '')} — RSI (14)", y=0.95, yanchor="top"),
+        template="plotly_white",
+        height=260,
+        yaxis=dict(title="RSI", range=[0, 100]),
+        showlegend=False,
+        margin=dict(t=50, b=30, l=60, r=20),
+    )
+    return pio.to_html(fig, full_html=False, include_plotlyjs=False)
+
+
+def build_macd_chart(tech: dict) -> str:
+    history = tech.get("price_history") or []
+    if not history or not any(h.get("macd") is not None for h in history):
+        return ""
+
+    dates = [h["date"] for h in history]
+    macd = [h.get("macd") for h in history]
+    signal = [h.get("macd_signal") for h in history]
+    hist = [h.get("macd_hist") for h in history]
+
+    hist_colors = ["#27ae60" if (v is not None and v >= 0) else "#e74c3c" for v in hist]
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=dates, y=hist, name="Histogram", marker_color=hist_colors, opacity=0.5))
+    fig.add_trace(go.Scatter(x=dates, y=macd, name="MACD", mode="lines",
+                              line=dict(color="#1f6dad", width=2)))
+    fig.add_trace(go.Scatter(x=dates, y=signal, name="Signal", mode="lines",
+                              line=dict(color="#e67e22", width=1.5, dash="dot")))
+
+    fig.update_layout(
+        title=dict(text=f"{tech.get('symbol', '')} — MACD (12, 26, 9)", y=0.95, yanchor="top"),
+        template="plotly_white",
+        height=280,
+        yaxis_title="MACD",
+        legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="left", x=0),
+        margin=dict(t=50, b=60, l=60, r=20),
     )
     return pio.to_html(fig, full_html=False, include_plotlyjs=False)
 
@@ -169,6 +232,16 @@ def build_charts_section(analysis_json: dict) -> str:
             chart = build_price_forecast_chart(tech)
             if chart:
                 parts.append(f'<div class="chart-container">{chart}</div>')
+
+            rsi_chart = build_rsi_chart(tech)
+            macd_chart = build_macd_chart(tech)
+            if rsi_chart or macd_chart:
+                parts.append('<div class="chart-row">')
+                if rsi_chart:
+                    parts.append(f'<div class="chart-container chart-half">{rsi_chart}</div>')
+                if macd_chart:
+                    parts.append(f'<div class="chart-container chart-half">{macd_chart}</div>')
+                parts.append('</div>')
 
             gauge = build_probability_gauge(tech)
             if gauge:
